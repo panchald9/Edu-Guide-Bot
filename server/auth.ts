@@ -7,6 +7,7 @@ import { db } from "./db";
 import { users } from "@shared/schema";
 import { eq } from "drizzle-orm";
 import crypto from "crypto";
+import nodemailer from "nodemailer";
 
 function hashPassword(password: string): string {
   return crypto.createHash("sha256").update(password).digest("hex");
@@ -115,6 +116,50 @@ export function setupAuth(app: Express) {
     if (!req.isAuthenticated()) return res.status(401).json({ message: "Not authenticated" });
     const user = req.user as any;
     res.json({ user: { id: user.id, email: user.email, firstName: user.firstName, lastName: user.lastName, isAdmin: user.isAdmin } });
+  });
+
+  app.post("/api/forgot-password", async (req, res) => {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ message: "Email is required" });
+
+    const [user] = await db.select().from(users).where(eq(users.email, email));
+    if (!user) return res.status(404).json({ message: "No account found with that email" });
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
+    await db.update(users).set({ resetToken: otp, resetTokenExpiry: expiry }).where(eq(users.id, user.id));
+
+    const transporter = nodemailer.createTransport({
+      host: process.env.SMTP_HOST,
+      port: Number(process.env.SMTP_PORT) || 587,
+      auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
+    });
+
+    await transporter.sendMail({
+      from: process.env.SMTP_FROM || process.env.SMTP_USER,
+      to: email,
+      subject: "Your EduBot Password Reset OTP",
+      html: `<p>Your OTP is: <strong>${otp}</strong>. It expires in 10 minutes.</p>`,
+    });
+
+    res.json({ message: "OTP sent" });
+  });
+
+  app.post("/api/reset-password", async (req, res) => {
+    const { email, otp, password } = req.body;
+    if (!email || !otp || !password) return res.status(400).json({ message: "Email, OTP, and password are required" });
+
+    const [user] = await db.select().from(users).where(eq(users.email, email));
+    if (!user || user.resetToken !== otp || !user.resetTokenExpiry || user.resetTokenExpiry < new Date()) {
+      return res.status(400).json({ message: "Invalid or expired OTP" });
+    }
+
+    await db.update(users)
+      .set({ password: hashPassword(password), resetToken: null, resetTokenExpiry: null })
+      .where(eq(users.id, user.id));
+
+    res.json({ message: "Password reset successful" });
   });
 }
 
