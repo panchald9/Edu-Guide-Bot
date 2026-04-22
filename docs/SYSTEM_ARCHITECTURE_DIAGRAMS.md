@@ -349,11 +349,6 @@ sequenceDiagram
     Admin-->>AlertSvc: acknowledged
     AlertSvc->>Admin: send detailed diagnostic
     Admin->>Admin: investigate issue
-    
-    style Auth fill:#f9f,stroke:#333
-    style AlertSvc fill:#f99,stroke:#333
-    style Admin fill:#9f9,stroke:#333
-    style AI fill:#99f,stroke:#333
 ```
 
 ---
