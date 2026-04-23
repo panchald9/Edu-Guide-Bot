@@ -551,6 +551,57 @@ graph TD
 
 ---
 
+## 8. SYSTEM ANALYSIS
+
+### 8.1 Problem Statement
+Edu-Guide-Bot addresses the need for continuous, personalized educational guidance for students who may not always have immediate access to teachers or mentors. The system provides a conversational AI interface, persistent learning history, and administrative oversight in a single platform.
+
+### 8.2 Functional Analysis
+- The authentication module supports secure account access and role separation between student and admin users.
+- The chat module supports question submission, AI response generation, and conversation history storage.
+- The admin module enables monitoring, user management, and operational control.
+- The profile and settings module supports personalization and user preference management.
+- The alert workflow supports incident visibility for failures in authentication, storage, AI availability, and health checks.
+
+### 8.3 Non-Functional Analysis
+- Performance: Real-time chat behavior is supported through efficient API routing and caching assumptions.
+- Reliability: Health checks, retry logic, and alert escalation improve fault visibility and recovery.
+- Security: JWT/session controls, RBAC, validation, and audit logging reduce unauthorized access risk.
+- Scalability: Layered separation and modular services support future horizontal growth.
+- Maintainability: TypeScript-based frontend/backend and clear module boundaries improve readability and change safety.
+
+### 8.4 Architecture Suitability
+The selected 3-tier architecture is suitable for this project because it separates concerns clearly:
+- Presentation layer for user experience and responsiveness.
+- Application layer for business logic and policy enforcement.
+- Data layer for persistence and consistency.
+
+This structure supports both current academic project requirements and future production hardening.
+
+### 8.5 Strengths
+- Clear separation of responsibilities across auth, chat, admin, and storage modules.
+- Good alignment between data model (users, conversations, messages, settings) and user workflows.
+- Admin visibility and auditability are treated as first-class capabilities.
+- Documentation includes multiple viewpoints (flow, DFD, sequence, timeline), which improves stakeholder communication.
+
+### 8.6 Gaps and Risks
+- External AI dependency can create latency or availability bottlenecks.
+- Alerting is well-modeled in diagrams, but operational tooling depth depends on implementation maturity.
+- Security posture can degrade without periodic testing (token handling, endpoint authorization, rate limits).
+- Performance under high concurrent usage is not validated unless load testing is performed.
+
+### 8.7 Recommended Improvements
+- Introduce circuit breaker and fallback strategies for AI-provider outages.
+- Add structured observability: centralized logs, metrics, traces, and dashboard-based SLO monitoring.
+- Execute regular security reviews and automated dependency vulnerability scanning.
+- Add workload-based performance benchmarks and capacity planning targets.
+- Formalize backup/restore and disaster recovery runbooks.
+
+### 8.8 Conclusion
+Edu-Guide-Bot is a well-structured educational assistant platform with strong architectural foundations for usability, extensibility, and governance. With targeted improvements in resilience engineering, observability, and validation testing, the system can progress from academic readiness to robust production readiness.
+
+---
+
 ## Deployment Architecture
 
 ### Development Environment:
